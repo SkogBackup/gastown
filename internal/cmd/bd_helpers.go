@@ -26,6 +26,7 @@ type bdCmd struct {
 	autoCommit bool
 	gtRoot     string
 	beadsDir   string
+	routing    bool
 }
 
 // BdCmd creates a new bd command builder with the given arguments.
@@ -82,6 +83,14 @@ func (b *bdCmd) Dir(dir string) *bdCmd {
 // buildEnv will still add an explicit BEADS_DIR for that directory; this method
 // only strips inherited values from the parent process.
 func (b *bdCmd) StripBeadsDir() *bdCmd {
+	b.env = filterEnvKey(b.env, "BEADS_DIR")
+	return b
+}
+
+// WithRouting strips inherited bd target selectors and does not pin BEADS_DIR,
+// allowing bd prefix routing to choose the target database. Dir still sets cwd.
+func (b *bdCmd) WithRouting() *bdCmd {
+	b.routing = true
 	b.env = filterEnvKey(b.env, "BEADS_DIR")
 	return b
 }
@@ -145,7 +154,9 @@ func (b *bdCmd) buildEnv() []string {
 	// carry a town-level or remote BEADS_DOLT_* target; keeping it while changing
 	// BEADS_DIR makes `bd show <displayed-id>` query a different database than
 	// `gt ready` used to render the row.
-	if b.beadsDir != "" {
+	if b.routing {
+		env = beads.BuildRoutingBDEnv(env, beads.ResolveBeadsDir(b.dir))
+	} else if b.beadsDir != "" {
 		env = pinBeadsDirEnv(env, b.beadsDir)
 	} else if b.dir != "" {
 		env = pinBeadsDirEnv(env, beads.ResolveBeadsDir(b.dir))

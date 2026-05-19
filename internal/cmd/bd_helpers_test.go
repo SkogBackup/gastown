@@ -660,6 +660,39 @@ func TestBdCmd_StripBeadsDir_NoOpWhenAbsent(t *testing.T) {
 	}
 }
 
+func TestBdCmd_WithRoutingDoesNotPinBeadsDir(t *testing.T) {
+	beadsDir := filepath.Join(t.TempDir(), ".beads")
+	if err := os.MkdirAll(beadsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	metadata := []byte(`{"dolt_database":"rigdb","dolt_server_host":"127.0.0.1","dolt_server_port":3307}`)
+	if err := os.WriteFile(filepath.Join(beadsDir, "metadata.json"), metadata, 0644); err != nil {
+		t.Fatal(err)
+	}
+	workDir := filepath.Dir(beadsDir)
+	bdc := &bdCmd{
+		args: []string{"show", "gt-abc", "--json"},
+		env: []string{
+			"PATH=/usr/bin",
+			"BEADS_DIR=/wrong",
+			"BEADS_DOLT_SERVER_DATABASE=hq",
+			"BEADS_DOLT_SERVER_HOST=wrong-host",
+		},
+		stderr: os.Stderr,
+	}
+	cmd := bdc.Dir(workDir).WithRouting().Build()
+	envMap := parseEnv(cmd.Env)
+	if _, ok := envMap["BEADS_DIR"]; ok {
+		t.Fatalf("BEADS_DIR should be absent for routing command, got %v", cmd.Env)
+	}
+	if _, ok := envMap["BEADS_DOLT_SERVER_DATABASE"]; ok {
+		t.Fatalf("BEADS_DOLT_SERVER_DATABASE should be absent for routing command, got %v", cmd.Env)
+	}
+	if envMap["BEADS_DOLT_SERVER_HOST"] != "127.0.0.1" {
+		t.Fatalf("BEADS_DOLT_SERVER_HOST = %q, want 127.0.0.1 in %v", envMap["BEADS_DOLT_SERVER_HOST"], cmd.Env)
+	}
+}
+
 func TestBdCmd_StripBeadsDir_Chaining(t *testing.T) {
 	bdc := BdCmd("test")
 	if bdc.StripBeadsDir() != bdc {

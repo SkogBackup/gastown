@@ -2753,7 +2753,7 @@ func (d *Daemon) isBeadClosed(beadID string) bool {
 	cmd := exec.Command(d.bdPath, "show", beadID, "--json") //nolint:gosec // G204: args are constructed internally
 	setSysProcAttr(cmd)
 	cmd.Dir = d.config.TownRoot
-	cmd.Env = bdReadOnlyEnv()
+	cmd.Env = bdReadOnlyRoutingEnv(d.config.TownRoot)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -2786,7 +2786,11 @@ func (d *Daemon) hasAssignedOpenWork(rigName, assignee string) bool {
 		}
 		cmd := exec.Command(d.bdPath, args...) //nolint:gosec // G204: args are constructed internally
 		cmd.Dir = d.config.TownRoot
-		cmd.Env = bdReadOnlyEnv()
+		if rigDir != "" {
+			cmd.Env = bdReadOnlyPinnedEnv(filepath.Join(rigDir, ".beads"))
+		} else {
+			cmd.Env = bdReadOnlyRoutingEnv(d.config.TownRoot)
+		}
 		output, err := cmd.Output()
 		if err != nil {
 			continue

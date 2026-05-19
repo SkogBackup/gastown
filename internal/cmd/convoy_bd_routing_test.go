@@ -96,8 +96,8 @@ if [ "$*" = "--allow-stale version" ]; then
   exit 0
 fi
 
-if [ -n "$BEADS_DIR" ]; then
-  echo "BEADS_DIR leaked: $BEADS_DIR" >&2
+if [ "$BEADS_DIR" != "%s/.beads" ]; then
+  echo "expected hardened BEADS_DIR, got $BEADS_DIR" >&2
   exit 1
 fi
 
@@ -131,7 +131,7 @@ case "$*" in
     exit 1
     ;;
 esac
-`, expectedWD, expectedWD, expectedWD)
+`, expectedWD, expectedWD, expectedWD, expectedWD)
 	writeRoutingBdStub(t, scriptBody)
 
 	oldJSON, oldAll, oldStatus, oldTree := convoyListJSON, convoyListAll, convoyListStatus, convoyListTree
@@ -172,8 +172,8 @@ if [ "$*" = "--allow-stale version" ]; then
   exit 0
 fi
 
-if [ -n "$BEADS_DIR" ]; then
-  echo "BEADS_DIR leaked: $BEADS_DIR" >&2
+if [ "$BEADS_DIR" != "%s/.beads" ]; then
+  echo "expected hardened BEADS_DIR, got $BEADS_DIR" >&2
   exit 1
 fi
 
@@ -197,7 +197,7 @@ case "$*" in
     exit 1
     ;;
 esac
-`, expectedWD, expectedWD)
+`, expectedWD, expectedWD, expectedWD)
 	writeRoutingBdStub(t, scriptBody)
 
 	oldJSON := convoyStatusJSON
