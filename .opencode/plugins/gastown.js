@@ -82,6 +82,15 @@ export const GasTown = async ({ $, directory }) => {
     console.error(lines.join("\n"));
   };
 
+  const simpleRole = (value) => {
+    if (!value) return "";
+    const parts = value.split("/").filter(Boolean);
+    if (parts.length >= 2 && parts[1] === "polecats") return "polecat";
+    if (parts.length >= 2 && parts[1] === "crew") return "crew";
+    if (parts.length >= 2) return parts[1];
+    return parts[0];
+  };
+
   const captureRun = async (cmd) => {
     try {
       return await $`/bin/sh -lc ${cmd}`.cwd(directory).text();
@@ -135,7 +144,7 @@ export const GasTown = async ({ $, directory }) => {
       }
     },
     "experimental.session.compacting": async ({ sessionID }, output) => {
-      const roleDisplay = role || "unknown";
+      const roleDisplay = simpleRole(role) || "unknown";
       output.context.push(`
 ## Gas Town Multi-Agent System
 
