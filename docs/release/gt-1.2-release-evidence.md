@@ -1,6 +1,6 @@
 # gt 1.2 Release Coordination Evidence
 
-Refreshed: 2026-05-26 19:45 UTC
+Refreshed: 2026-05-26 19:42 UTC
 
 Scope: release decision evidence only. This artifact records the current gate map, CI inventory, PR disposition, wrong-target records, and validation/review passes for `gt-12-release-evidence-refresh`.
 
